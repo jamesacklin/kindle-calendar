@@ -1,0 +1,27 @@
+services:
+  calendar:
+    image: kindle-calendar:local
+    build:
+      context: /mnt/apps/kindle-calendar
+    pull_policy: build
+    command:
+      - --bind
+      - 0.0.0.0
+      - --allow-any
+    environment:
+      CALENDAR_URLS: ${CALENDAR_URLS:?Set the Google Calendar iCal URLs}
+    ports:
+      - target: 8765
+        published: "8765"
+        host_ip: ${CALENDAR_HOST_IP:?Set the TrueNAS publish address}
+        protocol: tcp
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8765), 3).close()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3

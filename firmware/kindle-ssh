@@ -1,0 +1,17 @@
+#!/bin/sh
+# Project-local SSH configuration; no changes to the user's global SSH settings.
+set -eu
+script_path=$(readlink -f -- "$0")
+project_dir=$(CDPATH= cd -- "$(dirname -- "$script_path")/.." && pwd)
+ip route get 192.168.15.244 | grep -q 'src 192.168.15.201' || {
+    echo 'Kindle USB route is not configured; refusing to use another network.' >&2
+    exit 1
+}
+exec ssh -F /dev/null -b 192.168.15.201 \
+    -i "$project_dir/.ssh/kindle_rsa" \
+    -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 \
+    -o ServerAliveInterval=10 -o ServerAliveCountMax=2 \
+    -o StrictHostKeyChecking=yes \
+    -o UserKnownHostsFile="$project_dir/.ssh/known_hosts" \
+    root@192.168.15.244 "$@"

@@ -1,0 +1,63 @@
+# Wi-Fi image polling
+
+`placeholder_server.py` was used for the public-photo prototype. The live
+calendar runs on TrueNAS and returns a rolling six-day calendar using the
+same 600x800 grayscale PNG/ETag protocol. The Kindle reads the endpoint
+from its local `IMAGE_URL` file.
+
+The old public-photo test server can still be started manually on a separate
+loopback port, but must not share8765 with the calendar service:
+
+```sh
+python3 appliance/placeholder_server.py --bind 127.0.0.1 --port 8767
+```
+
+The Kindle client is `poll-image.sh`, installed at
+`/var/local/calendar-appliance/poll-image.sh`. One manual check:
+
+```sh
+./kindle-ssh 'base=/var/local/calendar-appliance; /bin/sh "$base/poll-image.sh" once "$(sed -n "1p" "$base/IMAGE_URL")"'
+```
+
+It checks appliance READY, sends If-None-Match when available, requires a
+600x800 8-bit grayscale PNG header and a 200 response, then atomically swaps
+the image only when its hash differs. The existing supervisor notices the
+hash change and refreshes the e-ink display. A 304 or network failure retains
+the displayed image. Curl limits transfers to 2 MB and 40 seconds.
+
+A runtime-only loop was started at a 60-second interval for observation and
+then replaced with a 900-second (15-minute) loop. The boot worker passed one
+unplugged reboot test: after READY, it received304, confirmed this boot,
+and started the loop. Inspect the current loop:
+
+```sh
+./kindle-ssh 'cat /tmp/calendar-appliance/wifi-client.log'
+./kindle-ssh 'p=$(cat /tmp/calendar-appliance/wifi-client.pid); tr "\000" " " < "/proc/$p/cmdline"; echo'
+```
+
+Before stopping the worker, verify its current `/proc/PID/cmdline` still
+matches the poller. Earlier background loops required KILL after TERM and
+a check of their exact PIDs. The boot worker will start a fresh loop on a
+successful next boot. The Kindle uses a 900-second shell polling loop. Boot
+must still start with USB physically unplugged; USB network setup remains in
+the appliance manager. A separate bounded RTC test proved four successful
+five-minute image transfers and renders with USB absent. That RTC loop is not
+yet installed as the regular boot client.
+
+The opt-in boot files are `/var/local/calendar-appliance/IMAGE_URL`,
+`wifi-client.sh`, and the modified `manage.sh`. A copy of the pre-Wi-Fi
+manager is `manage.before-wifi.sh`. To opt out before another boot, rename
+`IMAGE_URL` to `IMAGE_URL.disabled` over USB SSH. On failure to poll, the
+existing ten-minute watchdog disables appliance startup and restores the
+reader. RTC deep-suspend wake passed the bounded test, but wall-charger
+operation and true-shutdown recovery are not yet tested.
+
+The previous horse image is saved on-device as
+`rootfs/data/current.before-picsum.png`. To restore it, use a temporary file
+and same-filesystem rename so the supervisor sees a complete frame. The
+original family-calendar placeholder is still `current.before-horse.png`.
+
+The [TrueNAS endpoint](CALENDAR.md) serves the calendar over local-network
+HTTP. Stock curl 7.21.4 / OpenSSL 0.9.8j
+failed TLS negotiation against Picsum, even though it succeeded against
+example.com. Host-side fetching avoids that compatibility issue for now.

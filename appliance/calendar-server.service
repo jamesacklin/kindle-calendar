@@ -1,0 +1,17 @@
+[Unit]
+Description=Kindle six-day calendar image endpoint
+
+[Service]
+Type=simple
+WorkingDirectory=%h/src/kindle-hack
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=CALENDAR_DESKTOP_BIND=127.0.0.1 CALENDAR_DESKTOP_CLIENT=127.0.0.1
+EnvironmentFile=-%h/src/kindle-hack/.secrets/desktop.env
+UMask=0077
+ExecStart=%h/src/kindle-hack/.venv/bin/python %h/src/kindle-hack/appliance/calendar_server.py --url-file %h/src/kindle-hack/.secrets/work-calendar-url --bind ${CALENDAR_DESKTOP_BIND} --port 8765 --timezone America/New_York --allow-ip ${CALENDAR_DESKTOP_CLIENT} --allow-ip ${CALENDAR_DESKTOP_BIND}
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,7 @@
+.ssh/
+backups/
+evidence/
+appliance/build/
+.venv/
+.secrets/
+__pycache__/

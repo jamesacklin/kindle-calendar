@@ -1,0 +1,15 @@
+#!/bin/sh
+# Optional, non-blocking user-storage display service. Stock init files unchanged.
+case "$1" in
+    start)
+        if [ -f /mnt/us/calendar-display/service.sh ]; then
+            /bin/sh /mnt/us/calendar-display/service.sh boot
+        fi
+        ;;
+    stop)
+        if [ -f /mnt/us/calendar-display/service.sh ]; then
+            /bin/sh /mnt/us/calendar-display/service.sh stop
+        fi
+        ;;
+esac
+exit 0
