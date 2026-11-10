@@ -72,8 +72,6 @@ journalctl --user -u calendar-server.service -n 30 --no-pager
 ```
 
 The server advances the date range on the first request after local midnight.
-The Kindle updates on its next successful poll. A bounded four-cycle RTC test proved five-minute
-unplugged image polling with public photos; that client is not yet installed
-as a permanent boot service. The currently installed background poller still
-uses a900-second shell sleep and may be delayed during deep suspend. Thus an
-exact physical midnight rollover is not yet guaranteed.
+The Kindle updates on its next successful poll. The default worker can be
+delayed by deep suspend. [Hardware wake mode](POLLING.md#hardware-wake-on-battery)
+lets the Kindle wake periodically on battery to fetch the image.

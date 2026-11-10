@@ -1424,5 +1424,36 @@ pending authoritative generation mapping once firmware is available.
   from the wired LAN and the Kindle's Wi-Fi. The Kindle's automatic
   poller was running, and a manual poll fetched the updated frame.
 
+## 2026-11-09 — two 60-second RTC wakes with the live calendar
+
+- Ran a temporary two-cycle copy of the RTC test worker with a 60-second
+  alarm and a 60-second USB disconnect settling period. Both sleeps were
+  on battery, and the Kindle resumed after 62 and 61 seconds.
+- On the first wake, TrueNAS returned HTTP 200, the poller installed a
+  changed calendar image, and the display supervisor logged a matching
+  `RENDER_OK`. On the second wake, the worker reached its poll step
+  about one second after resuming, but curl returned exit code 7 before
+  the server received a request. Wi-Fi's connected state alone was
+  insufficient to establish endpoint readiness.
+- The worker completed both cycles, restored the original screensaver
+  setting, and left the RTC alarm cleared. After USB reconnection, a
+  Kindle Wi-Fi request returned HTTP 200 and the regular poller was
+  running. Removed the temporary worker and retained its diagnostic log.
+
+## 2026-11-10 — retry-enabled hardware wake updater
+
+- Tested the new RTC worker on battery with a 60-second polling schedule
+  and a two-cycle limit. The alarm woke the Kindle on both cycles.
+  On each wake, the first HTTP attempt failed while networking recovered.
+  Both second attempts succeeded after a five-second wait. TrueNAS
+  received both requests and returned HTTP 304 for the current image.
+- Verified the test worker exited after two cycles with zero failed
+  polls, restored the original screensaver setting, and cleared the
+  RTC alarm.
+- Installed `rtc-poll.sh` and the matching `wifi-client.sh`, enabled
+  `RTC_POLL`, and restarted the regular worker. Verified the initial
+  poll, boot confirmation, and handoff to the 900-second RTC schedule.
+  The unplugged hardware verification used the two short test cycles.
+
 See [calendar deployment](CALENDAR.md), [polling](POLLING.md), and
 [appliance operations](OPERATING.md) for the current configuration.

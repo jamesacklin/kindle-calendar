@@ -20,6 +20,9 @@ while [ "$attempt" -lt 24 ]; do
     if /bin/sh "$BASE/poll-image.sh" once "$URL"; then
         /bin/sh "$BASE/manage.sh" confirm || exit 1
         echo WIFI_CLIENT_READY
+        if [ -f "$BASE/RTC_POLL" ] && [ -r "$BASE/rtc-poll.sh" ]; then
+            exec /bin/sh "$BASE/rtc-poll.sh" "$URL"
+        fi
         exec /bin/sh "$BASE/poll-image.sh" loop "$URL" 900
     fi
     attempt=$((attempt + 1))

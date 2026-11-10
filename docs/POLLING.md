@@ -38,11 +38,30 @@ and started the loop. Inspect the current loop:
 Before stopping the worker, verify its current `/proc/PID/cmdline` still
 matches the poller. Earlier background loops required KILL after TERM and
 a check of their exact PIDs. The boot worker will start a fresh loop on a
-successful next boot. The Kindle uses a 900-second shell polling loop. Boot
+successful next boot. The default worker uses a 900-second shell polling loop. Boot
 must still start with USB physically unplugged; USB network setup remains in
 the appliance manager. A separate bounded RTC test proved four successful
 five-minute image transfers and renders with USB absent. That RTC loop is not
 yet installed as the regular boot client.
+
+## Hardware wake on battery
+
+Install [`rtc-poll.sh`](../appliance/rtc-poll.sh) and the matching
+[`wifi-client.sh`](../appliance/wifi-client.sh) in
+`/var/local/calendar-appliance/`. Create an empty `RTC_POLL` file in
+that directory to opt in, then restart the Wi-Fi worker or boot with USB
+unplugged. After its initial successful poll, the worker can use the
+hardware alarm for the next 15-minute poll on battery.
+
+The worker waits for the charger-disconnect event to settle before arming
+the alarm. After each wake it attempts the actual HTTP request up to three
+times, since a connected Wi-Fi status can precede usable networking. The
+display supervisor gets time to draw the image before the next sleep.
+Charging and battery levels below 20% use ordinary power management.
+
+Rename `RTC_POLL` to `RTC_POLL.disabled` over USB SSH to return to the
+regular poller. The worker releases its power settings and hands off to
+the original loop when it next runs.
 
 The opt-in boot files are `/var/local/calendar-appliance/IMAGE_URL`,
 `wifi-client.sh`, and the modified `manage.sh`. A copy of the pre-Wi-Fi

@@ -12,8 +12,9 @@ The Kindle side was tested on a Kindle 4 Non-Touch (D01100, firmware 4.1.4).
 
 1. A Python service reads private Google Calendar iCal feeds, expands recurring
    events, and uses Pillow and Inter to render a 600×800 grayscale PNG.
-2. The Kindle polls `/calendar.png` over Wi-Fi about every 15 minutes while
-   awake. A matching ETag lets it skip downloading an unchanged image.
+2. The Kindle polls `/calendar.png` over Wi-Fi about every 15 minutes. With
+   battery wake enabled, a hardware alarm wakes it between polls. A matching
+   ETag lets it skip downloading an unchanged image.
 3. The Kindle draws the downloaded image with its built-in e-ink utility and
    adds an `On` or `zZ` power indicator locally. The screen retains the last
    image and indicator during sleep.
