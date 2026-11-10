@@ -1,16 +1,8 @@
 # Wi-Fi image polling
 
-`placeholder_server.py` was used for the public-photo prototype. The live
-calendar runs on TrueNAS and returns a rolling six-day calendar using the
-same 600x800 grayscale PNG/ETag protocol. The Kindle reads the endpoint
-from its local `IMAGE_URL` file.
-
-The old public-photo test server can still be started manually on a separate
-loopback port, but must not share8765 with the calendar service:
-
-```sh
-python3 appliance/placeholder_server.py --bind 127.0.0.1 --port 8767
-```
+The live calendar runs on TrueNAS and returns a rolling six-day calendar as
+a 600x800 grayscale PNG with an ETag. The Kindle reads the endpoint from its
+local `IMAGE_URL` file.
 
 The Kindle client is `poll-image.sh`, installed at
 `/var/local/calendar-appliance/poll-image.sh`. One manual check:
@@ -41,8 +33,8 @@ a check of their exact PIDs. The boot worker will start a fresh loop on a
 successful next boot. The default worker uses a 900-second shell polling loop. Boot
 must still start with USB physically unplugged; USB network setup remains in
 the appliance manager. A separate bounded RTC test proved four successful
-five-minute image transfers and renders with USB absent. That RTC loop is not
-yet installed as the regular boot client.
+five-minute image transfers and renders with USB absent; the permanent
+worker described below supersedes it.
 
 ## Hardware wake on battery
 

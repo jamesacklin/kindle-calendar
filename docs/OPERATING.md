@@ -65,9 +65,7 @@ screensaver, suspend, or shutdown. The indicator is drawn on the Kindle and
 can remain visible when the device is asleep or off.
 
 The live image comes from the [TrueNAS calendar app](CALENDAR.md). See
-[Wi-Fi polling](POLLING.md) for the endpoint and worker commands. The
-[horse artwork](ARTWORK.md) and the original setup card are retained as
-earlier display assets.
+[Wi-Fi polling](POLLING.md) for the endpoint and worker commands.
 
 Four battery-only RTC wake tests fetched and displayed new images with USB
 disconnected. The regular worker uses a 15-minute loop. Wall-charger
